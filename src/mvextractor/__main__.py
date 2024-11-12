@@ -145,7 +145,7 @@ def crop_frame(frame,motion_vectors):
     
     
     # Rogner la frame selon ces limites
-    cropped_frame = frame[(min_y-16):(max_y+16), (min_x-16):(max_x+16)]
+    cropped_frame = frame[(min_y):(max_y), (min_x):(max_x)]
     
     return cropped_frame
 
@@ -234,7 +234,7 @@ def main(args=None):
         #motion_vectors=filter_vector_fields(motion_vectors)
         #print("4 : ",np.shape(motion_vectors))
 
-        #frame=crop_frame(frame, motion_vectors)
+    
 
         # Filtrer les vecteurs de mouvement par magnitude
         #min_magnitude = 2.0  # Ajuster cette valeur selon le seuil de magnitude désiré
@@ -265,8 +265,9 @@ def main(args=None):
             print("motion vectors: {} | ".format(np.shape(motion_vectors)), end=" ")
             print("elapsed time: {} s".format(telapsed))
 
-        #frame = draw_motion_vectors(frame, motion_vectors)
-        frame = draw_motion_vectors_black(frame, motion_vectors)
+        frame = draw_motion_vectors(frame, motion_vectors)
+        #frame = draw_motion_vectors_black(frame, motion_vectors)
+        frame=crop_frame(frame, motion_vectors)
         # store motion vectors, frames, etc. in output directory
         if args.dump:
             cv2.imwrite(os.path.join(f"out-{now}", "frames", f"frame-{step}.jpg"), frame)
