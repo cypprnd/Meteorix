@@ -267,10 +267,11 @@ def main(args=None):
 
         frame = draw_motion_vectors(frame, motion_vectors)
         #frame = draw_motion_vectors_black(frame, motion_vectors)
+    
         frame=crop_frame(frame, motion_vectors)
         # store motion vectors, frames, etc. in output directory
         if args.dump:
-            cv2.imwrite(os.path.join(f"out-{now}", "frames", f"frame-{step}.jpg"), frame)
+            if frame.size!=0 : cv2.imwrite(os.path.join(f"out-{now}", "frames", f"frame-{step}.jpg"), frame)
             np.save(os.path.join(f"out-{now}", "motion_vectors", f"mvs-{step}.npy"), motion_vectors)
             with open(os.path.join(f"out-{now}", "timestamps.txt"), "a") as f:
                 f.write(str(timestamp)+"\n")
