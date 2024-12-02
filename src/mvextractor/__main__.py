@@ -4,6 +4,9 @@ import time
 from datetime import datetime
 import argparse
 
+import GPUtil
+import psutil
+
 import numpy as np
 import cv2
 
