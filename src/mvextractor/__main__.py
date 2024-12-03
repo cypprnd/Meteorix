@@ -14,75 +14,10 @@ from sklearn.cluster import DBSCAN
 from mvextractor.videocap import VideoCap
 from sklearn.neighbors import NearestNeighbors
 
-def calculate_angle(mv):
-    start_pt = np.array([mv[3], mv[4]])
-    end_pt = np.array([mv[5], mv[6]])
-    direction = end_pt - start_pt
-    angle = np.arctan2(direction[1], direction[0])  # En radians
-    return angle
 
 
-def filter_by_magnitude(motion_vectors, min_magnitude):
-    filtered_vectors = []
-    for mv in motion_vectors:
-        start_pt = np.array([mv[0,3], mv[0,4]])  # source_x, source_y
-        end_pt = np.array([mv[0,5], mv[0,6]])    # dst_x, dst_y
-        magnitude = np.linalg.norm(end_pt - start_pt)  # Calculer la magnitude du vecteur
-        if magnitude > min_magnitude:
-            filtered_vectors.append(mv)
-    return np.array(filtered_vectors)
 
 
-def cluster_motion_vectors(motion_vectors, eps=15, min_samples=3):
-    """Cluster motion vectors based on spatial proximity."""
-    if len(motion_vectors) == 0:
-        return []
-
-    # Créer un tableau de features [x, y] pour clusterisation
-    feature_vectors = []
-    for mv in motion_vectors:
-        start_pt = np.array(mv[3], mv[4])  # source_x, source_y
-        feature_vectors.append([start_pt[0], start_pt[1]])
-    
-    # Cluster en utilisant DBSCAN sur les coordonnées spatiales
-    feature_vectors = np.array(feature_vectors)
-    clustering = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean').fit(feature_vectors)
-    
-    clusters = []
-    for cluster_id in np.unique(clustering.labels_):
-        if cluster_id != -1:  # Ignorer les points de bruit (label = -1)
-            cluster = np.array(motion_vectors)[clustering.labels_ == cluster_id]
-            clusters.append(cluster)
-    
-    return clusters
-
-
-def is_cluster_rectilinear(cluster, angle_tolerance=0.1):
-    """Vérifie si un cluster de vecteurs suit une direction rectiligne."""
-    angles = np.array([calculate_angle(mv) for mv in cluster])
-    mean_angle = np.mean(angles)
-    
-    # Vérifier si tous les angles sont proches du même angle moyen
-    deviations = np.abs(angles - mean_angle)
-    
-    return np.all(deviations < angle_tolerance)  # Si toutes les déviations sont inférieures à une tolérance
-
-
-def draw_clusters(frame, clusters, motion_vectors):
-    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]  # Quelques couleurs pour les clusters
-    valid_clusters = []
-    
-    for i, cluster in enumerate(clusters):
-        if is_cluster_rectilinear(cluster):  # Ne garder que les clusters rectilignes
-            valid_clusters.append(cluster)
-            for mv in cluster:
-                start_pt = (int(mv[3]), int(mv[4]))  # source_x, source_y
-                end_pt = (int(mv[5]), int(mv[6]))    # dst_x, dst_y
-                # Assigner une couleur en fonction du cluster
-                color = colors[i % len(colors)]
-                cv2.arrowedLine(frame, start_pt, end_pt, color, 1, cv2.LINE_AA, 0, 0.1)
-    
-    return frame, valid_clusters
 #Afficher les vecteurs sur un fond noir
 def draw_motion_vectors_black(frame, motion_vectors):
     black_frame = np.zeros_like(frame)
@@ -106,11 +41,11 @@ def draw_motion_vectors(frame, motion_vectors):
             cv2.arrowedLine(frame, start_pt, end_pt, (70, 255, 255), 1, cv2.LINE_AA, 0, 0.1)
     return frame
 
-def select_vectors_norm(motion_vectors):
+def select_vectors_norm(motion_vectors, value):
     start_pt = motion_vectors[:, [3, 4]]
     end_pt = motion_vectors[:, [5, 6]]
     norm = np.linalg.norm(end_pt - start_pt, axis=1)
-    return motion_vectors[norm>10]
+    return motion_vectors[norm>value]
 
 def select_vectors_zone(motion_vectors):
     if motion_vectors.shape[0] == 0:
@@ -185,6 +120,7 @@ def filter_vector_fields(data, max_angle_deg=5, min_count=5):
     return np.array(filtered_vectors)
 
 def main(args=None):
+    value=10
     if args is None:
         args = sys.argv[1:]
 
@@ -228,7 +164,7 @@ def main(args=None):
         print (step)
         print("1 : ",np.shape(motion_vectors))
         
-        motion_vectors=select_vectors_norm(motion_vectors)
+        motion_vectors=select_vectors_norm(motion_vectors,value)
         print("2 : ",np.shape(motion_vectors))
         
         motion_vectors=select_vectors_zone(motion_vectors)
@@ -239,15 +175,6 @@ def main(args=None):
 
     
 
-        # Filtrer les vecteurs de mouvement par magnitude
-        #min_magnitude = 2.0  # Ajuster cette valeur selon le seuil de magnitude désiré
-        #filtered_mvs = filter_by_magnitude(motion_vectors, min_magnitude)
-
-        # Cluster les vecteurs de mouvement
-        #clusters = cluster_motion_vectors(filtered_mvs, eps=15, min_samples=3)
-
-        # Dessiner les clusters rectilignes sur la frame
-        #frame, valid_clusters = draw_clusters(frame, clusters, filtered_mvs)
 
         tend = time.perf_counter()
         telapsed = tend - tstart
@@ -268,8 +195,8 @@ def main(args=None):
             print("motion vectors: {} | ".format(np.shape(motion_vectors)), end=" ")
             print("elapsed time: {} s".format(telapsed))
 
-        frame = draw_motion_vectors(frame, motion_vectors)
-        #frame = draw_motion_vectors_black(frame, motion_vectors)
+        #frame = draw_motion_vectors(frame, motion_vectors)
+        frame = draw_motion_vectors_black(frame, motion_vectors)
     
         frame=crop_frame(frame, motion_vectors)
         # store motion vectors, frames, etc. in output directory
