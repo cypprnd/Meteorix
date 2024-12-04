@@ -133,8 +133,9 @@ def main(args=None):
 
     if args.dump:
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        for child in ["frames", "motion_vectors"]:
-            os.makedirs(os.path.join(f"out-{now}", child), exist_ok=True)
+        #for child in ["frames", "motion_vectors"]:
+         #   os.makedirs(os.path.join(f"out-{now}", child), exist_ok=True)
+
 
     cap = VideoCap()
 
@@ -195,18 +196,36 @@ def main(args=None):
             print("motion vectors: {} | ".format(np.shape(motion_vectors)), end=" ")
             print("elapsed time: {} s".format(telapsed))
 
-        #frame = draw_motion_vectors(frame, motion_vectors)
-        frame = draw_motion_vectors_black(frame, motion_vectors)
+        frame = draw_motion_vectors(frame, motion_vectors)
+        #frame = draw_motion_vectors_black(frame, motion_vectors)
     
         frame=crop_frame(frame, motion_vectors)
         # store motion vectors, frames, etc. in output directory
         if args.dump:
-            if frame.size!=0 : cv2.imwrite(os.path.join(f"out-{now}", "frames", f"frame-{step}.jpg"), frame)
-            np.save(os.path.join(f"out-{now}", "motion_vectors", f"mvs-{step}.npy"), motion_vectors)
-            with open(os.path.join(f"out-{now}", "timestamps.txt"), "a") as f:
-                f.write(str(timestamp)+"\n")
-            with open(os.path.join(f"out-{now}", "frame_types.txt"), "a") as f:
-                f.write(frame_type+"\n")
+            # Définir un répertoire parent pour tous les dossiers de sortie
+            parent_dir = "outputs_frames"
+            os.makedirs(parent_dir, exist_ok=True)  # Crée le répertoire parent s'il n'existe pas
+
+            # Chemin du dossier spécifique à cette session
+            session_dir = os.path.join(parent_dir, f"out-{now}")
+            os.makedirs(session_dir, exist_ok=True)  # Crée le dossier de la session s'il n'existe pas
+
+         # Crée les sous-dossiers pour frames et motion_vectors
+            frames_dir = os.path.join(session_dir, "frames")
+            motion_vectors_dir = os.path.join(session_dir, "motion_vectors")
+            os.makedirs(frames_dir, exist_ok=True)
+            os.makedirs(motion_vectors_dir, exist_ok=True)
+
+            # Sauvegarde les fichiers dans les sous-dossiers
+            if frame.size != 0:
+                cv2.imwrite(os.path.join(frames_dir, f"frame-{step}.jpg"), frame)
+                np.save(os.path.join(motion_vectors_dir, f"mvs-{step}.npy"), motion_vectors)
+
+        # Ajoute les informations dans les fichiers texte
+            with open(os.path.join(session_dir, "timestamps.txt"), "a") as f:
+                f.write(str(timestamp) + "\n")
+            with open(os.path.join(session_dir, "frame_types.txt"), "a") as f:
+                f.write(frame_type + "\n")
 
 
         step += 1
