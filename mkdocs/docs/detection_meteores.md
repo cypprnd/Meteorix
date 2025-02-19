@@ -1,3 +1,0 @@
-# Détection de météores
-
-Les objectifs qui nous ont été confiés consistent en un programme non essentiel au fonctionnement de celui-ci. Nous cherchons à améliorer la qualité des images de sorties, ce qui est possible en réduisant le nombre de pixels de sortie, et ceci à l’aide d’un programme qui peut détecter les zones d’intérêt d’une vidéo où un mouvement a lieu. D’autre part, ces résultats vont être utilisés pour l’autre objectif qui est l’implémentation d’un réseau de neurones utilisant FlowNet qui permet d’affirmer si le mouvement correspond bien à un météore.
