@@ -40,7 +40,6 @@ ffmpeg -hwaccel cuda -framerate ? -i dossier/image%d.ppm -c:v ? -preset ? -pix_f
   <img src="mve/images/filtre.jpg" width="45%" />
 </p>
 
-\centering
 ### Comparaison Avant/Après Filtrage
 
 ## Contributeurs
