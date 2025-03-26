@@ -35,8 +35,12 @@ ffmpeg -hwaccel cuda -framerate ? -i dossier/image%d.ppm -c:v ? -preset ? -pix_f
 - -pix_fmt : format des pixels (yuv420p, yuv444p, gray)
 
 ## Exemples de Résultats
-![Avant filtrage](mve/images/pasfiltre.jpg)
-![Après filtrage](mve/images/filtre.jpg)
+<p align="center">
+  <img src="images/pasfiltre.jpg" width="45%" />
+  <img src="images/filtre.jpg" width="45%" />
+</p>
+
+### Comparaison Avant/Après Filtrage
 
 ## Contributeurs
 - **[Cyprien Renaud]**
